@@ -1,0 +1,1871 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>英単語れんしゅう</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: "Hiragino Maru Gothic ProN", "Hiragino Sans", "Noto Sans JP", sans-serif; background: #FFF7E8; color: #333; min-height: 100vh; }
+  .wrap { max-width: 640px; margin: 0 auto; padding: 16px; }
+  h1 { font-size: 28px; text-align: center; color: #E07B39; margin: 12px 0 4px; }
+  .sub { text-align: center; color: #999; font-size: 13px; margin-bottom: 16px; }
+  .card { background: #fff; border-radius: 20px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,.08); margin-bottom: 16px; }
+  .progress-label { font-size: 18px; font-weight: bold; text-align: center; margin-bottom: 8px; }
+  .bar { background: #F0E6D6; border-radius: 999px; height: 22px; overflow: hidden; }
+  .bar > div { background: linear-gradient(90deg, #FFB347, #E07B39); height: 100%; width: 0%; transition: width .4s; }
+  .btn { display: block; width: 100%; border: none; border-radius: 16px; padding: 18px; font-size: 20px; font-weight: bold; cursor: pointer; margin-bottom: 12px; font-family: inherit; }
+  .btn-main { background: #E07B39; color: #fff; }
+  .btn-sub { background: #FFF0DC; color: #B35F1F; border: 2px solid #F2C894; }
+  .btn-mode { background: #4FA8A0; color: #fff; }
+  .btn:active { transform: scale(.98); }
+  .filters { margin-bottom: 16px; }
+  .filters .flabel { font-size: 14px; font-weight: bold; color: #888; margin: 10px 0 6px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip { border: 2px solid #E8DCC8; background: #fff; border-radius: 999px; padding: 8px 14px; font-size: 15px; cursor: pointer; font-family: inherit; }
+  .chip.on { background: #E07B39; border-color: #E07B39; color: #fff; font-weight: bold; }
+  .pool-count { text-align: center; color: #888; font-size: 14px; margin: 8px 0 16px; }
+  .hidden { display: none !important; }
+  .back { background: none; border: none; font-size: 17px; color: #4FA8A0; font-weight: bold; cursor: pointer; margin-bottom: 12px; font-family: inherit; }
+  .word-big { font-size: 44px; font-weight: bold; text-align: center; margin: 26px 0 6px; word-break: break-word; }
+  .word-meta { text-align: center; color: #aaa; font-size: 15px; margin-bottom: 10px; }
+  .stars { color: #E07B39; letter-spacing: 2px; }
+  .tap-hint { text-align: center; color: #bbb; font-size: 15px; margin: 18px 0; }
+  .meaning { font-size: 26px; font-weight: bold; text-align: center; margin: 14px 0; line-height: 1.5; }
+  .example { background: #F4FAF9; border-radius: 12px; padding: 14px; font-size: 18px; line-height: 1.6; margin-top: 12px; }
+  .example .ja { color: #666; font-size: 16px; }
+  .para { background: #FFF6E8; border-radius: 12px; padding: 12px 14px; font-size: 17px; margin-top: 12px; }
+  .para b { color: #B35F1F; }
+  .warn { background: #FDECEC; border: 2px solid #F2A0A0; border-radius: 12px; padding: 12px 14px; font-size: 17px; margin-top: 12px; line-height: 1.6; }
+  .warn b { color: #C0392B; }
+  .judge-row { display: flex; gap: 12px; margin-top: 18px; }
+  .judge-row .btn { margin-bottom: 0; }
+  .btn-ok { background: #5CB85C; color: #fff; }
+  .btn-ng { background: #F2A0A0; color: #7A2020; }
+  .quiz-q { font-size: 34px; font-weight: bold; text-align: center; margin: 20px 0 6px; word-break: break-word; }
+  .quiz-sentence { font-size: 22px; text-align: center; line-height: 1.7; margin: 20px 0 6px; }
+  .choice { display: block; width: 100%; text-align: left; background: #fff; border: 3px solid #E8DCC8; border-radius: 14px; padding: 16px; font-size: 19px; margin-bottom: 10px; cursor: pointer; font-family: inherit; line-height: 1.4; }
+  .choice.correct { border-color: #5CB85C; background: #EAF7EA; }
+  .choice.wrong { border-color: #E57373; background: #FDECEC; }
+  .feedback { font-size: 19px; text-align: center; margin: 14px 0; min-height: 28px; font-weight: bold; }
+  .counter { text-align: center; color: #999; font-size: 15px; margin-bottom: 6px; }
+  .done-msg { text-align: center; font-size: 22px; font-weight: bold; padding: 30px 0; line-height: 1.7; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <!-- ホーム -->
+  <div id="view-home">
+    <h1>英単語れんしゅう</h1>
+    <div class="sub">チェックがついた 174語</div>
+    <div class="card">
+      <div class="progress-label" id="progress-label">174語中 0語 おぼえた！</div>
+      <div class="bar"><div id="progress-bar"></div></div>
+      <div class="pool-count" id="progress-rest"></div>
+    </div>
+    <button class="btn btn-main" id="btn-today">☀️ 今日の分（8語）</button>
+    <div class="filters">
+      <div class="flabel">セクション</div>
+      <div class="chips" id="chips-section"></div>
+      <div class="flabel">★の数（まちがえた回数）</div>
+      <div class="chips" id="chips-stars"></div>
+      <div class="flabel">グループ</div>
+      <div class="chips" id="chips-group"></div>
+    </div>
+    <div class="pool-count" id="pool-count"></div>
+    <button class="btn btn-mode" id="btn-cards">🃏 カードで覚える</button>
+    <button class="btn btn-sub" id="btn-quiz">❓ 意味あてクイズ</button>
+    <button class="btn btn-sub" id="btn-exquiz">✏️ 例文クイズ</button>
+  </div>
+
+  <!-- カード -->
+  <div id="view-card" class="hidden">
+    <button class="back" data-go-home>← もどる</button>
+    <div class="card">
+      <div class="counter" id="card-counter"></div>
+      <div class="word-big" id="card-word"></div>
+      <div class="word-meta" id="card-meta"></div>
+      <div id="card-front"><div class="tap-hint">タップすると 意味が出るよ</div></div>
+      <div id="card-back" class="hidden">
+        <div class="meaning" id="card-meaning"></div>
+        <div id="card-extra"></div>
+      </div>
+      <div class="judge-row hidden" id="card-judge">
+        <button class="btn btn-ok" id="btn-learned">おぼえた！😄</button>
+        <button class="btn btn-ng" id="btn-still">まだ…😣</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- クイズ -->
+  <div id="view-quiz" class="hidden">
+    <button class="back" data-go-home>← もどる</button>
+    <div class="card">
+      <div class="counter" id="quiz-counter"></div>
+      <div id="quiz-question"></div>
+      <div class="word-meta" id="quiz-meta"></div>
+      <div id="quiz-choices"></div>
+      <div class="feedback" id="quiz-feedback"></div>
+      <div id="quiz-extra"></div>
+      <button class="btn btn-main hidden" id="btn-quiz-next">つぎへ →</button>
+    </div>
+  </div>
+
+  <!-- おわり -->
+  <div id="view-done" class="hidden">
+    <div class="card"><div class="done-msg" id="done-msg"></div></div>
+    <button class="btn btn-main" data-go-home>トップへもどる</button>
+  </div>
+</div>
+<script>
+const WORDS = [
+ {
+  "word": "cause",
+  "meaning": "引き起こす・原因となる",
+  "section": 1,
+  "stars": 3,
+  "pos": "動詞",
+  "group": "abstract",
+  "paraphrase": "make something happen",
+  "example": "Too much rain can cause floods.",
+  "exampleJa": "雨が多すぎると洪水の原因になる。"
+ },
+ {
+  "word": "increase",
+  "meaning": "増える・増やす",
+  "section": 1,
+  "stars": 3,
+  "pos": "動詞",
+  "group": "abstract",
+  "paraphrase": "become more",
+  "example": "My speed increased after practice.",
+  "exampleJa": "練習の後、スピードが上がった。"
+ },
+ {
+  "word": "develop",
+  "meaning": "開発する・発達する",
+  "section": 1,
+  "stars": 3,
+  "pos": "動詞",
+  "group": "abstract",
+  "paraphrase": "make something new and better",
+  "example": "They developed a new robot.",
+  "exampleJa": "彼らは新しいロボットを開発した。"
+ },
+ {
+  "word": "improve",
+  "meaning": "向上させる・良くなる",
+  "section": 1,
+  "stars": 3,
+  "pos": "動詞",
+  "group": "abstract",
+  "paraphrase": "make better",
+  "example": "Practice improved my swimming.",
+  "exampleJa": "練習で水泳が上手になった。"
+ },
+ {
+  "word": "produce",
+  "meaning": "作る・生産する",
+  "section": 1,
+  "stars": 3,
+  "pos": "動詞",
+  "group": "abstract",
+  "paraphrase": "make",
+  "example": "This farm produces sweet strawberries.",
+  "exampleJa": "この農場は甘いイチゴを作っている。"
+ },
+ {
+  "word": "tell",
+  "meaning": "見分ける・わかる",
+  "section": 1,
+  "stars": 3,
+  "pos": "動詞",
+  "group": "abstract",
+  "paraphrase": "know the difference",
+  "example": "I can't tell which twin is which.",
+  "exampleJa": "双子のどちらがどちらか見分けがつかない。"
+ },
+ {
+  "word": "allow",
+  "meaning": "許す",
+  "section": 1,
+  "stars": 3,
+  "pos": "動詞",
+  "group": "abstract",
+  "paraphrase": "let someone do something",
+  "example": "The teacher allowed us to use the library.",
+  "exampleJa": "先生は図書室を使うことを許してくれた。"
+ },
+ {
+  "word": "suggest",
+  "meaning": "提案する",
+  "section": 1,
+  "stars": 3,
+  "pos": "動詞",
+  "group": "abstract",
+  "paraphrase": "give an idea",
+  "example": "I suggest a picnic this Sunday.",
+  "exampleJa": "今週の日曜にピクニックを提案します。"
+ },
+ {
+  "word": "describe",
+  "meaning": "述べる・描写する",
+  "section": 1,
+  "stars": 3,
+  "pos": "動詞",
+  "group": "abstract",
+  "paraphrase": "tell what something is like",
+  "example": "Can you describe your dream?",
+  "exampleJa": "あなたの夢を説明できる？"
+ },
+ {
+  "word": "disagree",
+  "meaning": "意見が食い違う",
+  "section": 1,
+  "stars": 3,
+  "pos": "動詞",
+  "group": "abstract",
+  "paraphrase": "have a different idea",
+  "example": "Friends sometimes disagree, and that's OK.",
+  "exampleJa": "友達同士でも意見が合わないことはある。それでいいんだよ。"
+ },
+ {
+  "word": "lead",
+  "meaning": "つながる・導く",
+  "section": 1,
+  "stars": 3,
+  "pos": "動詞",
+  "group": "abstract",
+  "paraphrase": "go to a place",
+  "example": "This road leads to the farm.",
+  "exampleJa": "この道は農場につながっている。"
+ },
+ {
+  "word": "raise",
+  "meaning": "育てる・上げる",
+  "section": 1,
+  "stars": 3,
+  "pos": "動詞",
+  "group": "abstract",
+  "paraphrase": "take care of a child or animal until it grows",
+  "example": "They raise cows on the farm.",
+  "exampleJa": "彼らは農場で牛を育てている。"
+ },
+ {
+  "word": "hire",
+  "meaning": "雇う",
+  "section": 1,
+  "stars": 3,
+  "pos": "動詞",
+  "group": "society",
+  "example": "The shop hired a new worker.",
+  "exampleJa": "お店は新しい店員を雇った。"
+ },
+ {
+  "word": "train",
+  "meaning": "訓練する",
+  "section": 1,
+  "stars": 3,
+  "pos": "動詞",
+  "group": "society",
+  "knownMeaning": "電車",
+  "example": "The team trains hard every morning.",
+  "exampleJa": "チームは毎朝一生懸命トレーニングする。"
+ },
+ {
+  "word": "result",
+  "meaning": "結果",
+  "section": 1,
+  "stars": 3,
+  "pos": "名詞",
+  "group": "abstract",
+  "example": "The result of the game was 3 to 2.",
+  "exampleJa": "試合の結果は3対2だった。"
+ },
+ {
+  "word": "amount",
+  "meaning": "量・金額",
+  "section": 1,
+  "stars": 3,
+  "pos": "名詞",
+  "group": "society",
+  "example": "A large amount of snow fell last night.",
+  "exampleJa": "昨夜、大量の雪が降った。"
+ },
+ {
+  "word": "situation",
+  "meaning": "状況・立場",
+  "section": 1,
+  "stars": 3,
+  "pos": "名詞",
+  "group": "abstract",
+  "paraphrase": "what is happening around",
+  "example": "In this situation, stay calm.",
+  "exampleJa": "こういう状況では、落ち着いていよう。"
+ },
+ {
+  "word": "device",
+  "meaning": "装置・工夫",
+  "section": 1,
+  "stars": 3,
+  "pos": "名詞",
+  "group": "abstract",
+  "example": "A telescope is a device for looking at stars.",
+  "exampleJa": "望遠鏡は星を見るための装置だ。"
+ },
+ {
+  "word": "employee",
+  "meaning": "従業員",
+  "section": 1,
+  "stars": 3,
+  "pos": "名詞",
+  "group": "society",
+  "example": "The employees in this shop are kind.",
+  "exampleJa": "このお店の従業員は親切だ。"
+ },
+ {
+  "word": "education",
+  "meaning": "教育",
+  "section": 1,
+  "stars": 3,
+  "pos": "名詞",
+  "group": "society",
+  "example": "Education helps us learn new things.",
+  "exampleJa": "教育は新しいことを学ぶ助けになる。"
+ },
+ {
+  "word": "fact",
+  "meaning": "事実",
+  "section": 1,
+  "stars": 3,
+  "pos": "名詞",
+  "group": "abstract",
+  "paraphrase": "something true",
+  "example": "It is a fact that the Earth goes around the Sun.",
+  "exampleJa": "地球が太陽の周りを回っているのは事実だ。"
+ },
+ {
+  "word": "benefit",
+  "meaning": "利益・恩恵",
+  "section": 1,
+  "stars": 3,
+  "pos": "名詞",
+  "group": "abstract",
+  "paraphrase": "a good thing you get",
+  "example": "Reading has many benefits.",
+  "exampleJa": "読書にはたくさんの良いことがある。"
+ },
+ {
+  "word": "practice",
+  "meaning": "実践・練習・習慣",
+  "section": 1,
+  "stars": 3,
+  "pos": "名詞",
+  "group": "abstract",
+  "paraphrase": "doing again and again to get better",
+  "example": "Practice every day makes you better.",
+  "exampleJa": "毎日の練習で上手になる。"
+ },
+ {
+  "word": "professor",
+  "meaning": "教授",
+  "section": 1,
+  "stars": 3,
+  "pos": "名詞",
+  "group": "society",
+  "example": "The professor talked about space.",
+  "exampleJa": "教授は宇宙について話した。"
+ },
+ {
+  "word": "article",
+  "meaning": "記事",
+  "section": 1,
+  "stars": 3,
+  "pos": "名詞",
+  "group": "society",
+  "example": "I read an article about animals in the newspaper.",
+  "exampleJa": "新聞で動物の記事を読んだ。"
+ },
+ {
+  "word": "discount",
+  "meaning": "割引",
+  "section": 1,
+  "stars": 3,
+  "pos": "名詞",
+  "group": "society",
+  "example": "This shop gives a 10% discount today.",
+  "exampleJa": "このお店は今日10%割引だ。"
+ },
+ {
+  "word": "chemical",
+  "meaning": "化学の",
+  "section": 1,
+  "stars": 3,
+  "pos": "形容詞",
+  "group": "abstract",
+  "example": "We did a chemical experiment in science class.",
+  "exampleJa": "理科の授業で化学の実験をした。"
+ },
+ {
+  "word": "ancient",
+  "meaning": "古代の",
+  "section": 1,
+  "stars": 3,
+  "pos": "形容詞",
+  "group": "abstract",
+  "example": "Ancient people looked at the same stars.",
+  "exampleJa": "古代の人々も同じ星を見ていた。"
+ },
+ {
+  "word": "recently",
+  "meaning": "最近",
+  "section": 1,
+  "stars": 3,
+  "pos": "副詞",
+  "group": "connector",
+  "paraphrase": "not long ago",
+  "example": "Recently, I started reading space books.",
+  "exampleJa": "最近、宇宙の本を読み始めた。"
+ },
+ {
+  "word": "though",
+  "meaning": "だけれども",
+  "section": 1,
+  "stars": 3,
+  "pos": "接続詞",
+  "group": "connector",
+  "paraphrase": "even though; but",
+  "example": "Though it rained, we played outside.",
+  "exampleJa": "雨が降ったけれど、外で遊んだ。"
+ },
+ {
+  "word": "while",
+  "meaning": "〜している間に",
+  "section": 1,
+  "stars": 3,
+  "pos": "接続詞",
+  "group": "connector",
+  "paraphrase": "during the time that",
+  "example": "While I was sleeping, it snowed.",
+  "exampleJa": "私が寝ている間に、雪が降った。"
+ },
+ {
+  "word": "whether",
+  "meaning": "〜かどうか",
+  "section": 1,
+  "stars": 3,
+  "pos": "接続詞",
+  "group": "connector",
+  "paraphrase": "if ... or not",
+  "example": "I don't know whether he can come.",
+  "exampleJa": "彼が来られるかどうかわからない。"
+ },
+ {
+  "word": "recommend",
+  "meaning": "推薦する・すすめる",
+  "section": 1,
+  "stars": 2,
+  "pos": "動詞",
+  "example": "The teacher recommended this book to me.",
+  "exampleJa": "先生がこの本を私にすすめてくれた。"
+ },
+ {
+  "word": "research",
+  "meaning": "調査・研究",
+  "section": 1,
+  "stars": 2,
+  "pos": "名詞",
+  "example": "She did research on planets at the library.",
+  "exampleJa": "彼女は図書館で惑星について調べた。"
+ },
+ {
+  "word": "material",
+  "meaning": "材料・資料",
+  "section": 1,
+  "stars": 2,
+  "pos": "名詞",
+  "example": "Wood is a good material for toys.",
+  "exampleJa": "木はおもちゃの良い材料だ。"
+ },
+ {
+  "word": "bill",
+  "meaning": "請求書・法案・紙幣",
+  "section": 1,
+  "stars": 2,
+  "pos": "名詞",
+  "example": "Dad paid the phone bill.",
+  "exampleJa": "お父さんが電話の請求書を払った。"
+ },
+ {
+  "word": "let",
+  "meaning": "〜させる・許す",
+  "section": 1,
+  "stars": 1,
+  "pos": "動詞",
+  "example": "Mom let me help with cooking.",
+  "exampleJa": "お母さんが料理の手伝いをさせてくれた。"
+ },
+ {
+  "word": "reduce",
+  "meaning": "減らす",
+  "section": 1,
+  "stars": 1,
+  "pos": "動詞",
+  "example": "Let's reduce plastic bags.",
+  "exampleJa": "レジ袋を減らそう。"
+ },
+ {
+  "word": "provide",
+  "meaning": "提供する",
+  "section": 1,
+  "stars": 1,
+  "pos": "動詞",
+  "example": "The farm provides fresh milk to the town.",
+  "exampleJa": "農場は町に新鮮な牛乳を提供している。"
+ },
+ {
+  "word": "repair",
+  "meaning": "修理する",
+  "section": 1,
+  "stars": 1,
+  "pos": "動詞",
+  "example": "Dad repaired my bicycle.",
+  "exampleJa": "お父さんが自転車を修理してくれた。"
+ },
+ {
+  "word": "encourage",
+  "meaning": "勇気づける・促す",
+  "section": 1,
+  "stars": 1,
+  "pos": "動詞",
+  "example": "My friends encouraged me before the race.",
+  "exampleJa": "レースの前に友達が応援してくれた。"
+ },
+ {
+  "word": "support",
+  "meaning": "支持する・支援する",
+  "section": 1,
+  "stars": 1,
+  "pos": "動詞",
+  "example": "We support our team with big voices.",
+  "exampleJa": "大きな声でチームを応援する。"
+ },
+ {
+  "word": "book",
+  "meaning": "予約する",
+  "section": 1,
+  "stars": 1,
+  "pos": "動詞",
+  "knownMeaning": "本",
+  "example": "Mom booked a hotel for our trip.",
+  "exampleJa": "お母さんが旅行のホテルを予約した。"
+ },
+ {
+  "word": "store",
+  "meaning": "蓄える・貯蔵する",
+  "section": 1,
+  "stars": 1,
+  "pos": "動詞",
+  "knownMeaning": "店",
+  "example": "Squirrels store nuts for winter.",
+  "exampleJa": "リスは冬のために木の実を蓄える。"
+ },
+ {
+  "word": "last",
+  "meaning": "続く・持続する",
+  "section": 1,
+  "stars": 1,
+  "pos": "動詞",
+  "knownMeaning": "最後の",
+  "example": "The concert lasted for two hours.",
+  "exampleJa": "コンサートは2時間続いた。"
+ },
+ {
+  "word": "run",
+  "meaning": "経営する・運営する",
+  "section": 1,
+  "stars": 1,
+  "pos": "動詞",
+  "knownMeaning": "走る",
+  "example": "Her family runs a small farm.",
+  "exampleJa": "彼女の家族は小さな農場を経営している。"
+ },
+ {
+  "word": "environment",
+  "meaning": "環境",
+  "section": 1,
+  "stars": 1,
+  "pos": "名詞",
+  "example": "We must protect the environment.",
+  "exampleJa": "環境を守らなければならない。"
+ },
+ {
+  "word": "experience",
+  "meaning": "経験",
+  "section": 1,
+  "stars": 1,
+  "pos": "名詞",
+  "example": "The trip was a wonderful experience.",
+  "exampleJa": "その旅行は素晴らしい経験だった。"
+ },
+ {
+  "word": "expert",
+  "meaning": "専門家・熟練者",
+  "section": 1,
+  "stars": 1,
+  "pos": "名詞",
+  "example": "My uncle is an expert on rockets.",
+  "exampleJa": "おじさんはロケットの専門家だ。"
+ },
+ {
+  "word": "fuel",
+  "meaning": "燃料",
+  "section": 1,
+  "stars": 1,
+  "pos": "名詞",
+  "example": "The bus uses a lot of fuel.",
+  "exampleJa": "バスはたくさんの燃料を使う。"
+ },
+ {
+  "word": "effect",
+  "meaning": "影響・効果",
+  "section": 1,
+  "stars": 1,
+  "pos": "名詞",
+  "example": "Exercise has a good effect on your body.",
+  "exampleJa": "運動は体に良い影響がある。"
+ },
+ {
+  "word": "likely",
+  "meaning": "〜しそうな・ありそうな",
+  "section": 1,
+  "stars": 1,
+  "pos": "形容詞",
+  "example": "It is likely to be sunny tomorrow.",
+  "exampleJa": "明日は晴れそうだ。"
+ },
+ {
+  "word": "actually",
+  "meaning": "実は・実際には",
+  "section": 1,
+  "stars": 1,
+  "pos": "副詞",
+  "example": "He is actually a very kind boy.",
+  "exampleJa": "彼は実はとても優しい子だ。"
+ },
+ {
+  "word": "expect",
+  "meaning": "予期する・期待する",
+  "section": 2,
+  "stars": 3,
+  "pos": "動詞",
+  "group": "abstract",
+  "paraphrase": "think it will happen",
+  "example": "I expect it will rain tomorrow.",
+  "exampleJa": "明日は雨が降ると思う。"
+ },
+ {
+  "word": "suffer",
+  "meaning": "苦しむ・悩まされる",
+  "section": 2,
+  "stars": 3,
+  "pos": "動詞",
+  "group": "abstract",
+  "paraphrase": "feel pain or trouble",
+  "example": "Many people suffer from hay fever in spring.",
+  "exampleJa": "春は花粉症で苦しむ人が多い。"
+ },
+ {
+  "word": "invent",
+  "meaning": "発明する",
+  "section": 2,
+  "stars": 3,
+  "pos": "動詞",
+  "group": "abstract",
+  "example": "Edison invented the light bulb.",
+  "exampleJa": "エジソンは電球を発明した。"
+ },
+ {
+  "word": "prevent",
+  "meaning": "防ぐ・妨げる",
+  "section": 2,
+  "stars": 3,
+  "pos": "動詞",
+  "group": "abstract",
+  "paraphrase": "stop something before it happens",
+  "example": "Washing hands prevents colds.",
+  "exampleJa": "手洗いは風邪を防ぐ。"
+ },
+ {
+  "word": "gain",
+  "meaning": "得る・増す",
+  "section": 2,
+  "stars": 3,
+  "pos": "動詞",
+  "group": "abstract",
+  "paraphrase": "get more",
+  "example": "She gained many new friends this year.",
+  "exampleJa": "彼女は今年、新しい友達がたくさん増えた。"
+ },
+ {
+  "word": "focus",
+  "meaning": "焦点を合わせる・集中する",
+  "section": 2,
+  "stars": 3,
+  "pos": "動詞",
+  "group": "abstract",
+  "paraphrase": "think hard about one thing",
+  "example": "Please focus on the ball.",
+  "exampleJa": "ボールに集中して。"
+ },
+ {
+  "word": "department",
+  "meaning": "部門・学科・売り場",
+  "section": 2,
+  "stars": 3,
+  "pos": "名詞",
+  "group": "society",
+  "example": "Mom works in a different department.",
+  "exampleJa": "お母さんは別の部署で働いている。"
+ },
+ {
+  "word": "client",
+  "meaning": "依頼人・顧客",
+  "section": 2,
+  "stars": 3,
+  "pos": "名詞",
+  "group": "society",
+  "example": "Dad's client sent him a letter.",
+  "exampleJa": "お父さんの依頼人が手紙を送ってきた。"
+ },
+ {
+  "word": "retirement",
+  "meaning": "退職・引退",
+  "section": 2,
+  "stars": 3,
+  "pos": "名詞",
+  "group": "society",
+  "example": "After retirement, Grandpa grows vegetables.",
+  "exampleJa": "退職後、おじいちゃんは野菜を作っている。"
+ },
+ {
+  "word": "harm",
+  "meaning": "害・損害",
+  "section": 2,
+  "stars": 3,
+  "pos": "名詞",
+  "group": "abstract",
+  "paraphrase": "a bad effect; damage",
+  "example": "Too much sun can harm your skin.",
+  "exampleJa": "日差しの浴びすぎは肌に害がある。"
+ },
+ {
+  "word": "population",
+  "meaning": "人口",
+  "section": 2,
+  "stars": 3,
+  "pos": "名詞",
+  "group": "society",
+  "example": "The population of this town is small.",
+  "exampleJa": "この町の人口は少ない。"
+ },
+ {
+  "word": "generation",
+  "meaning": "世代",
+  "section": 2,
+  "stars": 3,
+  "pos": "名詞",
+  "group": "society",
+  "example": "Grandma's generation didn't have smartphones.",
+  "exampleJa": "おばあちゃんの世代にはスマホがなかった。"
+ },
+ {
+  "word": "resident",
+  "meaning": "住民・居住者",
+  "section": 2,
+  "stars": 3,
+  "pos": "名詞",
+  "group": "society",
+  "example": "The residents of this building are kind.",
+  "exampleJa": "このマンションの住人は優しい。"
+ },
+ {
+  "word": "quality",
+  "meaning": "質・品質",
+  "section": 2,
+  "stars": 3,
+  "pos": "名詞",
+  "group": "abstract",
+  "paraphrase": "how good something is",
+  "example": "This shop sells good quality fruit.",
+  "exampleJa": "このお店は質の良い果物を売っている。"
+ },
+ {
+  "word": "distance",
+  "meaning": "距離",
+  "section": 2,
+  "stars": 3,
+  "pos": "名詞",
+  "group": "abstract",
+  "paraphrase": "how far it is",
+  "example": "The distance from home to school is one kilometer.",
+  "exampleJa": "家から学校までの距離は1キロだ。"
+ },
+ {
+  "word": "career",
+  "meaning": "職業・経歴",
+  "section": 2,
+  "stars": 3,
+  "pos": "名詞",
+  "group": "society",
+  "example": "He had a long career as a teacher.",
+  "exampleJa": "彼は長く先生の仕事を続けた。"
+ },
+ {
+  "word": "certain",
+  "meaning": "確かな・ある〜",
+  "section": 2,
+  "stars": 3,
+  "pos": "形容詞",
+  "group": "abstract",
+  "paraphrase": "sure",
+  "example": "I am certain that tomorrow will be sunny.",
+  "exampleJa": "明日晴れるのは確かだ。"
+ },
+ {
+  "word": "effective",
+  "meaning": "効果的な",
+  "section": 2,
+  "stars": 3,
+  "pos": "形容詞",
+  "group": "abstract",
+  "paraphrase": "works well",
+  "example": "This medicine is effective for colds.",
+  "exampleJa": "この薬は風邪によく効く。"
+ },
+ {
+  "word": "nowadays",
+  "meaning": "今日では・近ごろは",
+  "section": 2,
+  "stars": 3,
+  "pos": "副詞",
+  "group": "connector",
+  "paraphrase": "in these days",
+  "example": "Nowadays, many kids learn English.",
+  "exampleJa": "近ごろは英語を習う子が多い。"
+ },
+ {
+  "word": "sincerely",
+  "meaning": "心から・誠実に",
+  "section": 2,
+  "stars": 3,
+  "pos": "副詞",
+  "group": "connector",
+  "paraphrase": "from the heart",
+  "example": "She thanked him sincerely.",
+  "exampleJa": "彼女は心からお礼を言った。"
+ },
+ {
+  "word": "purchase",
+  "meaning": "購入する",
+  "section": 2,
+  "stars": 2,
+  "pos": "動詞"
+ },
+ {
+  "word": "include",
+  "meaning": "含む",
+  "section": 2,
+  "stars": 2,
+  "pos": "動詞"
+ },
+ {
+  "word": "attend",
+  "meaning": "出席する",
+  "section": 2,
+  "stars": 2,
+  "pos": "動詞"
+ },
+ {
+  "word": "prefer",
+  "meaning": "〜の方を好む",
+  "section": 2,
+  "stars": 2,
+  "pos": "動詞"
+ },
+ {
+  "word": "decrease",
+  "meaning": "減る・減らす",
+  "section": 2,
+  "stars": 2,
+  "pos": "動詞"
+ },
+ {
+  "word": "attach",
+  "meaning": "取り付ける・添付する",
+  "section": 2,
+  "stars": 2,
+  "pos": "動詞"
+ },
+ {
+  "word": "realize",
+  "meaning": "気づく・悟る",
+  "section": 2,
+  "stars": 2,
+  "pos": "動詞"
+ },
+ {
+  "word": "suit",
+  "meaning": "合う・似合う",
+  "section": 2,
+  "stars": 2,
+  "pos": "動詞",
+  "knownMeaning": "スーツ"
+ },
+ {
+  "word": "award",
+  "meaning": "賞・与える",
+  "section": 2,
+  "stars": 2,
+  "pos": "名詞"
+ },
+ {
+  "word": "method",
+  "meaning": "方法",
+  "section": 2,
+  "stars": 2,
+  "pos": "名詞"
+ },
+ {
+  "word": "organization",
+  "meaning": "組織・団体",
+  "section": 2,
+  "stars": 2,
+  "pos": "名詞"
+ },
+ {
+  "word": "biology",
+  "meaning": "生物学",
+  "section": 2,
+  "stars": 2,
+  "pos": "名詞"
+ },
+ {
+  "word": "industry",
+  "meaning": "産業・工業",
+  "section": 2,
+  "stars": 2,
+  "pos": "名詞"
+ },
+ {
+  "word": "participant",
+  "meaning": "参加者",
+  "section": 2,
+  "stars": 2,
+  "pos": "名詞"
+ },
+ {
+  "word": "charity",
+  "meaning": "慈善・慈善団体",
+  "section": 2,
+  "stars": 2,
+  "pos": "名詞"
+ },
+ {
+  "word": "present",
+  "meaning": "現在の・出席している",
+  "section": 2,
+  "stars": 2,
+  "pos": "形容詞",
+  "knownMeaning": "贈り物"
+ },
+ {
+  "word": "available",
+  "meaning": "利用できる・手に入る",
+  "section": 2,
+  "stars": 2,
+  "pos": "形容詞"
+ },
+ {
+  "word": "successful",
+  "meaning": "成功した",
+  "section": 2,
+  "stars": 2,
+  "pos": "形容詞"
+ },
+ {
+  "word": "contact",
+  "meaning": "連絡する・接触",
+  "section": 2,
+  "stars": 1,
+  "pos": "動詞"
+ },
+ {
+  "word": "require",
+  "meaning": "必要とする・要求する",
+  "section": 2,
+  "stars": 1,
+  "pos": "動詞"
+ },
+ {
+  "word": "serve",
+  "meaning": "仕える・食事を出す・務める",
+  "section": 2,
+  "stars": 1,
+  "pos": "動詞"
+ },
+ {
+  "word": "quit",
+  "meaning": "やめる・去る",
+  "section": 2,
+  "stars": 1,
+  "pos": "動詞"
+ },
+ {
+  "word": "form",
+  "meaning": "形・用紙",
+  "section": 2,
+  "stars": 1,
+  "pos": "名詞"
+ },
+ {
+  "word": "statement",
+  "meaning": "声明・陳述",
+  "section": 2,
+  "stars": 1,
+  "pos": "名詞"
+ },
+ {
+  "word": "membership",
+  "meaning": "会員資格・会員であること",
+  "section": 2,
+  "stars": 1,
+  "pos": "名詞"
+ },
+ {
+  "word": "treatment",
+  "meaning": "治療・扱い",
+  "section": 2,
+  "stars": 1,
+  "pos": "名詞"
+ },
+ {
+  "word": "advertisement",
+  "meaning": "広告",
+  "section": 2,
+  "stars": 1,
+  "pos": "名詞"
+ },
+ {
+  "word": "solution",
+  "meaning": "解決策・溶液",
+  "section": 2,
+  "stars": 1,
+  "pos": "名詞"
+ },
+ {
+  "word": "competition",
+  "meaning": "競争・競技会",
+  "section": 2,
+  "stars": 1,
+  "pos": "名詞"
+ },
+ {
+  "word": "opinion",
+  "meaning": "意見",
+  "section": 2,
+  "stars": 1,
+  "pos": "名詞"
+ },
+ {
+  "word": "recent",
+  "meaning": "最近の",
+  "section": 2,
+  "stars": 1,
+  "pos": "形容詞"
+ },
+ {
+  "word": "nearby",
+  "meaning": "近くの・近くに",
+  "section": 2,
+  "stars": 1,
+  "pos": "形容詞"
+ },
+ {
+  "word": "various",
+  "meaning": "さまざまな",
+  "section": 2,
+  "stars": 1,
+  "pos": "形容詞"
+ },
+ {
+  "word": "social",
+  "meaning": "社会の・社交の",
+  "section": 2,
+  "stars": 1,
+  "pos": "形容詞"
+ },
+ {
+  "word": "originally",
+  "meaning": "もともと・本来",
+  "section": 2,
+  "stars": 1,
+  "pos": "副詞"
+ },
+ {
+  "word": "avoid",
+  "meaning": "避ける",
+  "section": 3,
+  "stars": 3,
+  "pos": "動詞",
+  "group": "abstract",
+  "paraphrase": "stay away from",
+  "example": "Walk around to avoid the puddle.",
+  "exampleJa": "水たまりを避けて歩こう。"
+ },
+ {
+  "word": "consider",
+  "meaning": "よく考える・みなす",
+  "section": 3,
+  "stars": 3,
+  "pos": "動詞",
+  "group": "abstract",
+  "paraphrase": "think carefully",
+  "example": "We considered going to the sea.",
+  "exampleJa": "私たちは海に行くことをよく考えた。"
+ },
+ {
+  "word": "remove",
+  "meaning": "取り除く・移す",
+  "section": 3,
+  "stars": 3,
+  "pos": "動詞",
+  "group": "abstract",
+  "paraphrase": "take away",
+  "example": "Mom removed the seeds from the watermelon.",
+  "exampleJa": "お母さんはスイカの種を取り除いた。"
+ },
+ {
+  "word": "participate",
+  "meaning": "参加する",
+  "section": 3,
+  "stars": 3,
+  "pos": "動詞",
+  "group": "abstract",
+  "paraphrase": "join and do together",
+  "example": "Many kids participated in the sports day.",
+  "exampleJa": "たくさんの子が運動会に参加した。"
+ },
+ {
+  "word": "appear",
+  "meaning": "現れる・〜のように見える",
+  "section": 3,
+  "stars": 3,
+  "pos": "動詞",
+  "group": "abstract",
+  "paraphrase": "come into sight",
+  "example": "A rainbow appeared after the rain.",
+  "exampleJa": "雨の後に虹が現れた。"
+ },
+ {
+  "word": "remain",
+  "meaning": "残る・〜のままである",
+  "section": 3,
+  "stars": 3,
+  "pos": "動詞",
+  "group": "abstract",
+  "paraphrase": "stay; be left",
+  "example": "Only three cookies remain.",
+  "exampleJa": "クッキーは3つだけ残っている。"
+ },
+ {
+  "word": "occur",
+  "meaning": "起こる・生じる",
+  "section": 3,
+  "stars": 3,
+  "pos": "動詞",
+  "group": "abstract",
+  "paraphrase": "happen",
+  "example": "The accident occurred near the station.",
+  "exampleJa": "事故は駅の近くで起こった。"
+ },
+ {
+  "word": "argue",
+  "meaning": "議論する・主張する",
+  "section": 3,
+  "stars": 3,
+  "pos": "動詞",
+  "group": "abstract",
+  "paraphrase": "talk with different ideas",
+  "example": "The brothers argued about the game rules.",
+  "exampleJa": "兄弟はゲームのルールで議論した。"
+ },
+ {
+  "word": "rise",
+  "meaning": "上がる・昇る",
+  "section": 3,
+  "stars": 3,
+  "pos": "動詞",
+  "group": "abstract",
+  "paraphrase": "go up",
+  "example": "The sun rises in the east.",
+  "exampleJa": "太陽は東から昇る。"
+ },
+ {
+  "word": "measure",
+  "meaning": "測る・対策",
+  "section": 3,
+  "stars": 3,
+  "pos": "動詞",
+  "group": "abstract",
+  "paraphrase": "find the size with a tool",
+  "example": "Measure the water before cooking rice.",
+  "exampleJa": "ご飯を炊く前に水の量を測って。"
+ },
+ {
+  "word": "fee",
+  "meaning": "料金・手数料",
+  "section": 3,
+  "stars": 3,
+  "pos": "名詞",
+  "group": "society",
+  "example": "The entrance fee is 500 yen.",
+  "exampleJa": "入場料は500円だ。"
+ },
+ {
+  "word": "opportunity",
+  "meaning": "機会・チャンス",
+  "section": 3,
+  "stars": 3,
+  "pos": "名詞",
+  "group": "abstract",
+  "paraphrase": "a good chance",
+  "example": "This trip is a good opportunity to speak English.",
+  "exampleJa": "この旅行は英語を話す良い機会だ。"
+ },
+ {
+  "word": "instance",
+  "meaning": "例・事例",
+  "section": 3,
+  "stars": 3,
+  "pos": "名詞",
+  "group": "abstract",
+  "paraphrase": "an example",
+  "example": "For instance, birds can fly.",
+  "exampleJa": "例えば、鳥は飛ぶことができる。"
+ },
+ {
+  "word": "concern",
+  "meaning": "心配・関心事",
+  "section": 3,
+  "stars": 3,
+  "pos": "名詞",
+  "group": "abstract",
+  "paraphrase": "something you worry about",
+  "example": "My concern is the weather tomorrow.",
+  "exampleJa": "私の心配は明日の天気だ。"
+ },
+ {
+  "word": "income",
+  "meaning": "収入・所得",
+  "section": 3,
+  "stars": 3,
+  "pos": "名詞",
+  "group": "society",
+  "example": "His income comes from his shop.",
+  "exampleJa": "彼の収入はお店から得ている。"
+ },
+ {
+  "word": "effort",
+  "meaning": "努力",
+  "section": 3,
+  "stars": 3,
+  "pos": "名詞",
+  "group": "abstract",
+  "paraphrase": "hard work",
+  "example": "She made an effort to read every day.",
+  "exampleJa": "彼女は毎日読む努力をした。"
+ },
+ {
+  "word": "period",
+  "meaning": "期間・時代",
+  "section": 3,
+  "stars": 3,
+  "pos": "名詞",
+  "group": "abstract",
+  "example": "The Edo period lasted for a long time.",
+  "exampleJa": "江戸時代は長く続いた。"
+ },
+ {
+  "word": "evidence",
+  "meaning": "証拠",
+  "section": 3,
+  "stars": 3,
+  "pos": "名詞",
+  "group": "abstract",
+  "paraphrase": "something that shows the truth",
+  "example": "The footprints are evidence that a cat came.",
+  "exampleJa": "足跡は猫が来た証拠だ。"
+ },
+ {
+  "word": "salary",
+  "meaning": "給料・月給",
+  "section": 3,
+  "stars": 3,
+  "pos": "名詞",
+  "group": "society",
+  "example": "Dad gets his salary every month.",
+  "exampleJa": "お父さんは毎月給料をもらう。"
+ },
+ {
+  "word": "crime",
+  "meaning": "犯罪",
+  "section": 3,
+  "stars": 3,
+  "pos": "名詞",
+  "group": "society",
+  "example": "Stealing is a crime.",
+  "exampleJa": "盗むことは犯罪だ。"
+ },
+ {
+  "word": "deadline",
+  "meaning": "締め切り",
+  "section": 3,
+  "stars": 3,
+  "pos": "名詞",
+  "group": "society",
+  "example": "The deadline for homework is Friday.",
+  "exampleJa": "宿題の締め切りは金曜日だ。"
+ },
+ {
+  "word": "climate",
+  "meaning": "気候",
+  "section": 3,
+  "stars": 3,
+  "pos": "名詞",
+  "group": "abstract",
+  "paraphrase": "the usual weather of a place",
+  "example": "The climate of Okinawa is warm.",
+  "exampleJa": "沖縄の気候は暖かい。"
+ },
+ {
+  "word": "harmful",
+  "meaning": "有害な",
+  "section": 3,
+  "stars": 3,
+  "pos": "形容詞",
+  "group": "abstract",
+  "paraphrase": "bad for health",
+  "example": "Smoke is harmful to your body.",
+  "exampleJa": "煙は体に有害だ。"
+ },
+ {
+  "word": "regularly",
+  "meaning": "定期的に・規則正しく",
+  "section": 3,
+  "stars": 3,
+  "pos": "副詞",
+  "group": "connector",
+  "paraphrase": "again and again at the same times",
+  "example": "She practices the piano regularly.",
+  "exampleJa": "彼女は定期的にピアノを練習している。"
+ },
+ {
+  "word": "furthermore",
+  "meaning": "さらに・その上",
+  "section": 3,
+  "stars": 3,
+  "pos": "副詞",
+  "group": "connector",
+  "paraphrase": "also; one more thing",
+  "example": "It's cold, and furthermore, it's raining.",
+  "exampleJa": "寒いし、その上雨も降っている。"
+ },
+ {
+  "word": "despite",
+  "meaning": "〜にもかかわらず",
+  "section": 3,
+  "stars": 3,
+  "pos": "前置詞",
+  "group": "connector",
+  "paraphrase": "even though",
+  "example": "Despite the rain, we played outside.",
+  "exampleJa": "雨にもかかわらず、外で遊んだ。"
+ },
+ {
+  "word": "contain",
+  "meaning": "含む・入っている",
+  "section": 3,
+  "stars": 2,
+  "pos": "動詞"
+ },
+ {
+  "word": "afford",
+  "meaning": "買う余裕がある・〜する余裕がある",
+  "section": 3,
+  "stars": 2,
+  "pos": "動詞"
+ },
+ {
+  "word": "locate",
+  "meaning": "位置する・見つける",
+  "section": 3,
+  "stars": 2,
+  "pos": "動詞"
+ },
+ {
+  "word": "depend",
+  "meaning": "〜次第である・頼る",
+  "section": 3,
+  "stars": 2,
+  "pos": "動詞"
+ },
+ {
+  "word": "accept",
+  "meaning": "受け入れる・認める",
+  "section": 3,
+  "stars": 2,
+  "pos": "動詞"
+ },
+ {
+  "word": "disappoint",
+  "meaning": "失望させる",
+  "section": 3,
+  "stars": 2,
+  "pos": "動詞"
+ },
+ {
+  "word": "sense",
+  "meaning": "感覚・意味・センス",
+  "section": 3,
+  "stars": 2,
+  "pos": "名詞"
+ },
+ {
+  "word": "decision",
+  "meaning": "決定・決断",
+  "section": 3,
+  "stars": 2,
+  "pos": "名詞"
+ },
+ {
+  "word": "cell",
+  "meaning": "細胞",
+  "section": 3,
+  "stars": 2,
+  "pos": "名詞"
+ },
+ {
+  "word": "movement",
+  "meaning": "動き・運動",
+  "section": 3,
+  "stars": 2,
+  "pos": "名詞"
+ },
+ {
+  "word": "economy",
+  "meaning": "経済・節約",
+  "section": 3,
+  "stars": 2,
+  "pos": "名詞"
+ },
+ {
+  "word": "rest",
+  "meaning": "休息・残り",
+  "section": 3,
+  "stars": 2,
+  "pos": "名詞",
+  "knownMeaning": "休む"
+ },
+ {
+  "word": "coast",
+  "meaning": "海岸・沿岸",
+  "section": 3,
+  "stars": 2,
+  "pos": "名詞"
+ },
+ {
+  "word": "advantage",
+  "meaning": "利点・強み",
+  "section": 3,
+  "stars": 2,
+  "pos": "名詞"
+ },
+ {
+  "word": "license",
+  "meaning": "免許・許可証",
+  "section": 3,
+  "stars": 2,
+  "pos": "名詞"
+ },
+ {
+  "word": "appointment",
+  "meaning": "約束・予約・任命",
+  "section": 3,
+  "stars": 2,
+  "pos": "名詞"
+ },
+ {
+  "word": "creature",
+  "meaning": "生き物",
+  "section": 3,
+  "stars": 2,
+  "pos": "名詞"
+ },
+ {
+  "word": "complete",
+  "meaning": "完全な・完了する",
+  "section": 3,
+  "stars": 2,
+  "pos": "形容詞"
+ },
+ {
+  "word": "particular",
+  "meaning": "特定の・特別の",
+  "section": 3,
+  "stars": 2,
+  "pos": "形容詞"
+ },
+ {
+  "word": "convenient",
+  "meaning": "便利な・都合のよい",
+  "section": 3,
+  "stars": 2,
+  "pos": "形容詞"
+ },
+ {
+  "word": "original",
+  "meaning": "もとの・独創的な",
+  "section": 3,
+  "stars": 2,
+  "pos": "形容詞"
+ },
+ {
+  "word": "economic",
+  "meaning": "経済の",
+  "section": 3,
+  "stars": 2,
+  "pos": "形容詞"
+ },
+ {
+  "word": "empty",
+  "meaning": "空の・空っぽの",
+  "section": 3,
+  "stars": 2,
+  "pos": "形容詞"
+ },
+ {
+  "word": "lately",
+  "meaning": "最近・近ごろ",
+  "section": 3,
+  "stars": 2,
+  "pos": "副詞"
+ },
+ {
+  "word": "immediately",
+  "meaning": "すぐに・直ちに",
+  "section": 3,
+  "stars": 2,
+  "pos": "副詞"
+ },
+ {
+  "word": "publish",
+  "meaning": "出版する・発表する",
+  "section": 3,
+  "stars": 1,
+  "pos": "動詞"
+ },
+ {
+  "word": "treat",
+  "meaning": "扱う・治療する",
+  "section": 3,
+  "stars": 1,
+  "pos": "動詞",
+  "knownMeaning": "ごちそう・おやつ"
+ },
+ {
+  "word": "rent",
+  "meaning": "賃貸する・借りる",
+  "section": 3,
+  "stars": 1,
+  "pos": "動詞"
+ },
+ {
+  "word": "edit",
+  "meaning": "編集する",
+  "section": 3,
+  "stars": 1,
+  "pos": "動詞"
+ },
+ {
+  "word": "condition",
+  "meaning": "状態・条件",
+  "section": 3,
+  "stars": 1,
+  "pos": "名詞"
+ },
+ {
+  "word": "head",
+  "meaning": "頭・向かう",
+  "section": 3,
+  "stars": 1,
+  "pos": "名詞",
+  "knownMeaning": "頭"
+ },
+ {
+  "word": "success",
+  "meaning": "成功",
+  "section": 3,
+  "stars": 1,
+  "pos": "名詞"
+ },
+ {
+  "word": "invention",
+  "meaning": "発明",
+  "section": 3,
+  "stars": 1,
+  "pos": "名詞"
+ },
+ {
+  "word": "agency",
+  "meaning": "代理店・機関",
+  "section": 3,
+  "stars": 1,
+  "pos": "名詞"
+ },
+ {
+  "word": "direction",
+  "meaning": "方向・指示",
+  "section": 3,
+  "stars": 1,
+  "pos": "名詞"
+ },
+ {
+  "word": "role",
+  "meaning": "役割",
+  "section": 3,
+  "stars": 1,
+  "pos": "名詞"
+ },
+ {
+  "word": "society",
+  "meaning": "社会",
+  "section": 3,
+  "stars": 1,
+  "pos": "名詞"
+ },
+ {
+  "word": "experiment",
+  "meaning": "実験",
+  "section": 3,
+  "stars": 1,
+  "pos": "名詞"
+ },
+ {
+  "word": "frequent",
+  "meaning": "頻繁な",
+  "section": 3,
+  "stars": 1,
+  "pos": "形容詞"
+ },
+ {
+  "word": "unfortunately",
+  "meaning": "残念ながら・あいにく",
+  "section": 3,
+  "stars": 1,
+  "pos": "副詞"
+ }
+];
+</script>
+<script>
+const LS_KEY = "tango-progress-v1";
+let progress = {};
+try { progress = JSON.parse(localStorage.getItem(LS_KEY) || "{}"); } catch (e) { progress = {}; }
+function saveProgress() { try { localStorage.setItem(LS_KEY, JSON.stringify(progress)); } catch (e) {} }
+function isLearned(w) { return progress[w] === "learned"; }
+function setState(w, s) { progress[w] = s; saveProgress(); renderProgress(); }
+
+const filters = { section: 0, stars: 0, group: "all" };
+function pool() {
+  return WORDS.filter(d =>
+    (filters.section === 0 || d.section === filters.section) &&
+    (filters.stars === 0 || d.stars === filters.stars) &&
+    (filters.group === "all" || d.group === filters.group || (filters.group === "second" && d.knownMeaning))
+  );
+}
+function shuffle(a) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+function esc(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;"); }
+
+function renderProgress() {
+  const n = WORDS.filter(d => isLearned(d.word)).length;
+  document.getElementById("progress-label").textContent = WORDS.length + "語中 " + n + "語 おぼえた！";
+  document.getElementById("progress-bar").style.width = (n / WORDS.length * 100) + "%";
+  document.getElementById("progress-rest").textContent = "あと " + (WORDS.length - n) + "語";
+  document.getElementById("pool-count").textContent = "いまの範囲：" + pool().length + "語";
+}
+
+function makeChips(elId, items, cur, cb) {
+  const el = document.getElementById(elId);
+  el.innerHTML = "";
+  items.forEach(it => {
+    const b = document.createElement("button");
+    b.className = "chip" + (String(it.v) === String(cur) ? " on" : "");
+    b.textContent = it.label;
+    b.onclick = () => { cb(it.v); };
+    el.appendChild(b);
+  });
+}
+function renderChips() {
+  makeChips("chips-section", [{v:0,label:"全部"},{v:1,label:"Section 1"},{v:2,label:"Section 2"},{v:3,label:"Section 3"}], filters.section, v => { filters.section = v; renderChips(); renderProgress(); });
+  makeChips("chips-stars", [{v:0,label:"全部"},{v:3,label:"★★★"},{v:2,label:"★★"},{v:1,label:"★"}], filters.stars, v => { filters.stars = v; renderChips(); renderProgress(); });
+  makeChips("chips-group", [{v:"all",label:"全部"},{v:"abstract",label:"抽象語"},{v:"society",label:"大人の社会"},{v:"connector",label:"つなぎ言葉"},{v:"second",label:"第2の意味"}], filters.group, v => { filters.group = v; renderChips(); renderProgress(); });
+}
+
+function show(view) {
+  ["home","card","quiz","done"].forEach(v => document.getElementById("view-" + v).classList.toggle("hidden", v !== view));
+  window.scrollTo(0, 0);
+}
+document.querySelectorAll("[data-go-home]").forEach(b => b.onclick = () => { renderProgress(); show("home"); });
+
+function extraHtml(d) {
+  let h = "";
+  if (d.knownMeaning) h += '<div class="warn">⚠️ 「' + esc(d.knownMeaning) + '」とは <b>別の意味</b>！この本では「' + esc(d.meaning) + '」だよ</div>';
+  if (d.example) h += '<div class="example">' + esc(d.example) + '<br><span class="ja">' + esc(d.exampleJa || "") + '</span></div>';
+  if (d.paraphrase) h += '<div class="para">やさしい英語では：<b>' + esc(d.paraphrase) + '</b></div>';
+  return h;
+}
+function metaText(d) { return "Section " + d.section + " ・ " + d.pos + ' ・ <span class="stars">' + "★".repeat(d.stars) + "</span>"; }
+
+/* ---------- カード ---------- */
+let deck = [], deckIdx = 0, deckLabel = "";
+function startCards(list, label) {
+  if (!list.length) { alert("この範囲の単語がありません"); return; }
+  deck = list; deckIdx = 0; deckLabel = label || "";
+  show("card"); renderCard();
+}
+function renderCard() {
+  const d = deck[deckIdx];
+  document.getElementById("card-counter").textContent = deckLabel + " " + (deckIdx + 1) + " / " + deck.length;
+  document.getElementById("card-word").textContent = d.word;
+  document.getElementById("card-meta").innerHTML = metaText(d);
+  document.getElementById("card-front").classList.remove("hidden");
+  document.getElementById("card-back").classList.add("hidden");
+  document.getElementById("card-judge").classList.add("hidden");
+  document.getElementById("card-meaning").textContent = d.meaning;
+  document.getElementById("card-extra").innerHTML = extraHtml(d);
+}
+document.getElementById("view-card").querySelector(".card").addEventListener("click", e => {
+  if (e.target.closest("button")) return;
+  document.getElementById("card-front").classList.add("hidden");
+  document.getElementById("card-back").classList.remove("hidden");
+  document.getElementById("card-judge").classList.remove("hidden");
+});
+function nextCard() {
+  deckIdx++;
+  if (deckIdx >= deck.length) {
+    document.getElementById("done-msg").innerHTML = "🎉 おつかれさま！<br>ぜんぶ見たよ";
+    show("done");
+  } else renderCard();
+}
+document.getElementById("btn-learned").onclick = () => { setState(deck[deckIdx].word, "learned"); nextCard(); };
+document.getElementById("btn-still").onclick = () => { setState(deck[deckIdx].word, "still"); nextCard(); };
+
+/* ---------- クイズ ---------- */
+let quizList = [], quizIdx = 0, quizMode = "meaning", answered = false;
+function forms(w) {
+  const set = [w, w + "s", w + "es", w + "d", w + "ed", w + "ing"];
+  if (w.endsWith("e")) set.push(w.slice(0, -1) + "ing");
+  if (w.endsWith("y")) set.push(w.slice(0, -1) + "ies", w.slice(0, -1) + "ied");
+  return set;
+}
+function blankExample(d) {
+  const lower = d.example.toLowerCase();
+  for (const f of forms(d.word)) {
+    const i = lower.indexOf(f.toLowerCase());
+    if (i >= 0) return d.example.slice(0, i) + "＿＿＿＿" + d.example.slice(i + f.length);
+  }
+  return null;
+}
+function startQuiz(mode) {
+  let list = pool();
+  if (mode === "example") list = list.filter(d => d.example && blankExample(d));
+  if (list.length < 1) { alert("この範囲で出せる問題がありません"); return; }
+  quizMode = mode;
+  quizList = shuffle(list.filter(d => !isLearned(d.word)).concat(list.filter(d => isLearned(d.word)))).slice(0, 10);
+  quizIdx = 0;
+  show("quiz"); renderQuiz();
+}
+function renderQuiz() {
+  answered = false;
+  const d = quizList[quizIdx];
+  document.getElementById("quiz-counter").textContent = (quizIdx + 1) + " / " + quizList.length + " 問";
+  document.getElementById("quiz-meta").innerHTML = metaText(d);
+  document.getElementById("quiz-feedback").textContent = "";
+  document.getElementById("quiz-extra").innerHTML = "";
+  document.getElementById("btn-quiz-next").classList.add("hidden");
+  const q = document.getElementById("quiz-question");
+  const ch = document.getElementById("quiz-choices");
+  ch.innerHTML = "";
+  let choices;
+  if (quizMode === "meaning") {
+    q.innerHTML = '<div class="quiz-q">' + esc(d.word) + '</div><div class="tap-hint">意味はどれ？</div>';
+    let others = shuffle(WORDS.filter(x => x.word !== d.word && x.section === d.section));
+    choices = shuffle([d].concat(others.slice(0, 3)));
+    choices.forEach(c => {
+      const b = document.createElement("button");
+      b.className = "choice"; b.textContent = c.meaning;
+      b.onclick = () => answer(b, c.word === d.word, d);
+      ch.appendChild(b);
+    });
+  } else {
+    q.innerHTML = '<div class="quiz-sentence">' + esc(blankExample(d)) + '</div><div class="tap-hint">あてはまる単語はどれ？</div>';
+    let others = shuffle(WORDS.filter(x => x.word !== d.word && x.pos === d.pos));
+    choices = shuffle([d].concat(others.slice(0, 3)));
+    choices.forEach(c => {
+      const b = document.createElement("button");
+      b.className = "choice"; b.textContent = c.word;
+      b.onclick = () => answer(b, c.word === d.word, d);
+      ch.appendChild(b);
+    });
+  }
+}
+function answer(btn, ok, d) {
+  if (answered) return;
+  answered = true;
+  document.querySelectorAll("#quiz-choices .choice").forEach(b => {
+    const isAns = quizMode === "meaning" ? b.textContent === d.meaning : b.textContent === d.word;
+    if (isAns) b.classList.add("correct");
+  });
+  if (!ok) btn.classList.add("wrong");
+  document.getElementById("quiz-feedback").textContent = ok ? "⭕ せいかい！" : "❌ ざんねん… 正解は「" + (quizMode === "meaning" ? d.meaning : d.word) + "」";
+  document.getElementById("quiz-feedback").style.color = ok ? "#3E8E41" : "#C0392B";
+  document.getElementById("quiz-extra").innerHTML = extraHtml(d);
+  setState(d.word, ok ? "learned" : "still");
+  document.getElementById("btn-quiz-next").classList.remove("hidden");
+}
+document.getElementById("btn-quiz-next").onclick = () => {
+  quizIdx++;
+  if (quizIdx >= quizList.length) {
+    const n = WORDS.filter(d => isLearned(d.word)).length;
+    document.getElementById("done-msg").innerHTML = "🎉 クイズおわり！<br>おぼえた単語は " + n + "語になったよ";
+    show("done");
+  } else renderQuiz();
+};
+
+/* ---------- 起動 ---------- */
+document.getElementById("btn-today").onclick = () => {
+  const rest = shuffle(WORDS.filter(d => !isLearned(d.word)).sort((a, b) => b.stars - a.stars)).slice(0, 8);
+  if (!rest.length) { document.getElementById("done-msg").innerHTML = "🏆 ぜんぶおぼえた！すごい！"; show("done"); return; }
+  startCards(rest, "今日の分");
+};
+document.getElementById("btn-cards").onclick = () => {
+  const p = pool();
+  startCards(shuffle(p.filter(d => !isLearned(d.word))).concat(shuffle(p.filter(d => isLearned(d.word)))), "");
+};
+document.getElementById("btn-quiz").onclick = () => startQuiz("meaning");
+document.getElementById("btn-exquiz").onclick = () => startQuiz("example");
+renderChips();
+renderProgress();
+</script>
+</body>
+</html>
